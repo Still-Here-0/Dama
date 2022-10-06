@@ -1,0 +1,22 @@
+ESCOPO:
+Quero fazer um jogo de damas totalmente funcional no prompt.
+
+BASE DE FUNCIONAL:
+Menu <-> Game
+Menu <-> Manual
+Menu <-> Options
+Menu  -> Quit
+
+- Game
+Select <-> Move / Attack
+Move /  Attack -> End
+
+- Manual
+Text explaning how the game works
+
+- Options
+Change colors (blue, red, yellow...)
+Change boards ([], {}, (), ||...)
+
+- Quit
+Sai do jogo
