@@ -1,12 +1,6 @@
 from colorama import Back
 from enum import Enum
 
-class SubState(Enum):
-    NEXT = 0
-    ERROR = 1
-    BACK = 2
-    CONTINUE = 3
-
 class Mks(Enum):
     MOV = Back.GREEN
     ATT = Back.RED
@@ -28,3 +22,5 @@ class TurnState(Enum):
     CHECK = 2
     PASS = 3
     END_GAME = 4
+    SELECT_ERROR = 6
+    MOVE_ERROR = 7

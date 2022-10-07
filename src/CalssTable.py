@@ -1,4 +1,4 @@
-from ClassState import PlayerTurn as PT
+from ClassState import PlayerTurn as PT, Mks
 from ClassMarker import Maker
 from ClassPiece import Piece
 import general as gen
@@ -27,15 +27,40 @@ class Table:
         piece = self.obj_from_coord(*self.selected_piece)
         mov_list = piece.getMovPossibilities(self.table_state)
 
-        for line, column, type, kill_list in mov_list:
-            self.table_state[line][column] = Maker(type, kill_list)
+        for line, column, type, kill in mov_list:
+            self.table_state[line][column] = Maker(type, kill)
             self.makers.append((line, column))
 
-    def backToSelect(self):
+    def movPiece(self,table_state, to_line, to_column):
+        can_kill_again = False
+        piece:Piece = self.obj_from_coord(self.selected_piece[0], self.selected_piece[1])
+        
+        if self.table_state[to_line][to_column].kill:
+            en_line, en_column = self.table_state[to_line][to_column].kill
+            self.table_state[en_line][en_column] = None
+            killble = piece.getKillbleMovs(table_state)
+            if killble:
+                can_kill_again = True
+
+        self.unselect()
+        piece.moved(to_line, to_column)
+        self.table_state[self.selected_piece[0]][self.selected_piece[1]] = None
+        self.table_state[to_line][to_column] = piece
+
+        self.selected_piece = None
+        return can_kill_again
+
+    def selectPiece(self, line, column):
+        piece = self.obj_from_coord(line, column) 
+        piece.setSelection()
+        self.selected_piece = (line, column)
+        self.setMarkers()
+
+    def unselect(self):
         for line, column in self.makers:
-            obj = self.table_state[line][column]
             self.table_state[line][column] = None
         
+        self.makers = []
         piece = self.obj_from_coord(*self.selected_piece)
         piece.setSelection()
 
@@ -68,5 +93,5 @@ class Table:
                     state_line.append(None)
             state.append(state_line)
         
-        state[3][3] = Piece(table_line, table_column, self.p_colors[1], self.char_pieces[1], PT.P2)
+        #state[3][3] = Piece(table_line, table_column, self.p_colors[1], self.char_pieces[1], PT.P2)
         self.setTableState(state)
