@@ -19,8 +19,10 @@ class PlayerTurn(Enum):
 class TurnState(Enum):
     SELECT = 0
     MOVE = 1
-    CHECK = 2
-    PASS = 3
-    END_GAME = 4
+    CHECK_AFTER_ATT = 2
+    CHECK_END_GAME = 3
+    PASS = 4
+    END_GAME = 5
     SELECT_ERROR = 6
     MOVE_ERROR = 7
+    MOVE_AGAIN = 8

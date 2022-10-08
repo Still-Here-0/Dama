@@ -20,16 +20,23 @@ def selectState(objTable:Table, turn:PT) -> int:
     
     line = int(coord[1]) - 1
     column = valid[coord[0]]
-    objTable.selectPiece(line, column)
+    
+    must_kill = objTable.isKilling(turn)
+    has_selected = objTable.selectPiece(line, column, must_kill)
+    if not has_selected:
+        return TS.SELECT_ERROR
 
     return TS.MOVE
 
-def moveState(objTable:Table) -> int:
+def moveState(objTable:Table, unselectable=True) -> int:
     valid = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7}
-    print('Digite "ESC" para selecionar outra peca')
+
+    if unselectable:
+        print('Digite "ESC" para selecionar outra peca')
+    
     moveTo = input('Selecione uma posicao: ')
 
-    if moveTo == 'ESC':
+    if moveTo == 'ESC' and unselectable:
         objTable.unselect()
         return TS.SELECT
 
@@ -47,15 +54,24 @@ def moveState(objTable:Table) -> int:
     to_line = int(moveTo[1]) - 1
     to_column = valid[moveTo[0]]
 
-    can_kill_again = objTable.movPiece(objTable.table_state, to_line, to_column)
+    killed = objTable.movPiece(to_line, to_column)
 
-    if can_kill_again:
-        objTable.selectPiece(to_line, to_column)
-        return TS.MOVE
+    if killed:
+        return TS.CHECK_AFTER_ATT
+    
+    return TS.CHECK_END_GAME
 
-    return TS.CHECK
+def checkState(objTable:Table, turn:PT, hasAttacked:bool=False) -> int:
+    if hasAttacked:
+        if objTable.last_selected_piece.getKillbleMovs(objTable.table_state):
+            p_line, p_column = objTable.last_selected_piece.coord
+            objTable.selectPiece(p_line, p_column)
+            return TS.MOVE_AGAIN
 
-def checkState(objTable:Table) -> int:
+    hasEnded = objTable.checkForEndGame(turn)
+    if hasEnded:
+        return TS.END_GAME
+
     return TS.PASS
 
 def start_game(objTable:Table) -> Windown:
@@ -87,8 +103,17 @@ def start_game(objTable:Table) -> Windown:
                     error_msg = 'Falha ao mover, tente novamente!'
                     turn_state = TS.MOVE
 
-            case TS.CHECK:
-                turn_state = checkState(objTable)
+            case TS.MOVE_AGAIN:
+                turn_state = moveState(objTable, unselectable=False)
+                if turn_state == TS.MOVE_ERROR:
+                    error_msg = 'Falha ao mover, tente novamente!'
+                    turn_state = TS.MOVE_AGAIN
+
+            case TS.CHECK_AFTER_ATT:
+                turn_state = checkState(objTable, p_turn, hasAttacked=True)
+
+            case TS.CHECK_END_GAME:
+                turn_state = checkState(objTable, p_turn)
 
             case TS.PASS:
                 p_turn = PT.P1 if p_turn == PT.P2 else PT.P2
@@ -97,5 +122,8 @@ def start_game(objTable:Table) -> Windown:
         if turn_state is None:
             print(f'FULL ERROR!!! {turn_state   =}')
             turn_state = TS.END_GAME
+    
+    objTable.printTable()
+    input(f"Fim de jogo!\nVitoria de {objTable.p_colors[p_turn.value] + p_turn.name + Fore.RESET}")
     
     return Windown.MENU

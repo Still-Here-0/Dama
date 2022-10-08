@@ -6,7 +6,7 @@ from colorama import Fore
 
 def main():
     opt = [
-        (Fore.BLUE, Fore.YELLOW),
+        (Fore.RED, Fore.YELLOW),
         ('P', 'P'),
         ('[', ']')
     ]
